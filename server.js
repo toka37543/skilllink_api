@@ -1,9 +1,11 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const { passport } = require('./lib/passport');
 const app = express();
 const port = 3003;
 app.use(express.json())
+app.use(passport.initialize())
 
 /*
  * define where all the orutes are 

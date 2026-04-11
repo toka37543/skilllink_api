@@ -2,19 +2,15 @@ const express = require('express');
 const db = require("../lib/db")
 const joi = require("joi")
 const app = express();
-const crypto = require("crypto");
 const bcrypt = require("bcrypt");
+const authController = require("../controllers/authController");
+const passwordController = require("../controllers/passwordController");
 
 
-app.post('/auth/login',async (req, res) => {
-  // Login to my profile
-  res.send('Get my profile');
-});
+app.post('/auth/login', authController.login);
 
 
 app.post('/auth/register', async (req, res) => {  
-  const body = req.body;
-  
   // skip 
   const schema = joi.object({
     first_name: joi.string().required(),
@@ -23,10 +19,20 @@ app.post('/auth/register', async (req, res) => {
     password: joi.string().min(8).required(),
     type: joi.string().valid("user", "client").required(),
     country_code: joi.string().optional(),
-    phone_number: joi.string().optional()
+    phone_number: joi.string().optional(),
+    company_name: joi.when("type", {
+      is: "client",
+      then: joi.string().optional(),
+      otherwise: joi.forbidden()
+    }),
+    company_details: joi.when("type", {
+      is: "client",
+      then: joi.string().optional(),
+      otherwise: joi.forbidden()
+    })
   })
   
-  const validation = schema.validate(body)
+  const validation = schema.validate(req.body)
   if (validation.error) {
     res.status(400).send({
       success: false,
@@ -34,28 +40,49 @@ app.post('/auth/register', async (req, res) => {
     })
     return;
   }
+
+  const body = validation.value;
   
   try {
-    const query = "INSERT INTO users (first_name, last_name, email, password, country_code, phone_number, type) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    // const hashedPassword = crypto.createHash('sha256').update(body.password).digest('hex');
     const hashedPassword = await bcrypt.hash(body.password, 10);
-    const result = await db.execute(query, [
-      body.first_name,
-      body.last_name,
-      body.email,
-      hashedPassword,
-      body.country_code ?? null,
-      body.phone_number ?? null,
-      body.type
-    ]);
+    let query;
+    let params;
+
+    if (body.type === "client") {
+      query = "INSERT INTO clients (first_name, last_name, email, password, country_code, phone_number, company_name, company_details) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+      params = [
+        body.first_name,
+        body.last_name,
+        body.email,
+        hashedPassword,
+        body.country_code ?? null,
+        body.phone_number ?? null,
+        body.company_name ?? null,
+        body.company_details ?? null
+      ];
+    } else {
+      query = "INSERT INTO users (first_name, last_name, email, password, country_code, phone_number) VALUES (?, ?, ?, ?, ?, ?)";
+      params = [
+        body.first_name,
+        body.last_name,
+        body.email,
+        hashedPassword,
+        body.country_code ?? null,
+        body.phone_number ?? null
+      ];
+    }
+
+    const result = await db.execute(query, params);
     
-    delete body.password; // remove password from response
+    const data = { ...body };
+    delete data.password; // remove password from response
+
     return res.status(200).send({
       success: true,
-      message: "User registered successfully",
+      message: `${body.type === "client" ? "Client" : "User"} registered successfully`,
       data: {
         id: result[0].insertId,
-        ...body
+        ...data
       }
     })
   } catch (err) {
@@ -68,8 +95,8 @@ app.post('/auth/register', async (req, res) => {
 });
 
 
-app.post('/auth/reset-password', (req, res) => {
-  res.send(`get a new passoword`);
-});
+app.post('/auth/forget-password', passwordController.forgetPassword);
+
+app.post('/auth/reset-password', passwordController.resetPassword);
 
 module.exports = app;
