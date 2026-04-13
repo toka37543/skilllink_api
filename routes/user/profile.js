@@ -1,12 +1,12 @@
 const express = require('express');
 const app = express();
-app.get('/profile', (req, res) => {
-  // Login to my profile
-  res.send('Get user profile');
-});
+const userController = require("../../controllers/user.controller");
+const { requireAuth, requireRole } = require("../../middleware/auth");
 
-app.put('/profile', (req, res) => {
-  res.send('make updates');
-});
+app.get('/profile', requireAuth, requireRole("user"), userController.getProfile);
+
+app.put('/profile', requireAuth, requireRole("user"), userController.updateProfile);
+
+app.get('/profiles/:user_id', userController.getPublicProfile);
 
 module.exports = app;

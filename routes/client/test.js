@@ -1,8 +1,7 @@
 const express = require("express")
 const app = express();
+const clientController = require("../../controllers/client.controller");
 
-app.get("/", function (req,res) {
-    res.end("client API")
-});
+app.get("/", clientController.index);
 
 module.exports = app;
