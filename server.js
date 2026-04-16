@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { passport } = require('./lib/passport');
 const app = express();
-const port = 3003;
+const port = process.env.PORT || 3000;
 app.use(express.json())
 app.use(passport.initialize())
 
