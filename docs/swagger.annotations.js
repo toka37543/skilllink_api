@@ -7,15 +7,6 @@
  *       scheme: bearer
  *       bearerFormat: JWT
  *   schemas:
- *     ErrorResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: false
- *         message:
- *           type: string
- *           example: Error message
  *     LoginRequest:
  *       type: object
  *       required: [email, password, type]
@@ -163,7 +154,6 @@
  *       properties:
  *         files:
  *           type: array
- *           minItems: 1
  *           items:
  *             type: object
  *             required: [file_name, file_url]
@@ -225,17 +215,6 @@
  *         payment_method:
  *           type: string
  *           example: sudo-card
- *     SuccessResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: true
- *         message:
- *           type: string
- *           example: Operation successful
- *         data:
- *           type: object
  * tags:
  *   - name: Root
  *   - name: Auth
@@ -253,9 +232,13 @@
  *   get:
  *     tags: [Root]
  *     summary: Root
+ *     description: Use this as a lightweight health check to confirm the API server is responding.
  *     responses:
  *       200:
  *         description: Plain text health response.
+ *         content:
+ *           text/plain:
+ *             example: Hello World
  */
 
 /**
@@ -264,6 +247,7 @@
  *   post:
  *     tags: [Auth]
  *     summary: Login
+ *     description: Use this when the frontend needs to authenticate a user or client and receive a Bearer token for protected endpoints.
  *     requestBody:
  *       required: true
  *       content:
@@ -273,10 +257,28 @@
  *     responses:
  *       200:
  *         description: Login successful.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Login successful
+ *               data:
+ *                 token: jwt-token
+ *                 token_type: Bearer
+ *                 expires_in: 1d
+ *                 account:
+ *                   id: 1
+ *                   email: ahmed@example.com
+ *                   type: user
  *       400:
  *         description: Validation error.
  *       401:
  *         description: Invalid credentials.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: false
+ *               message: Invalid email or password
  */
 
 /**
@@ -285,6 +287,7 @@
  *   post:
  *     tags: [Auth]
  *     summary: Register a user or client
+ *     description: Use this on signup screens. Send type `user` for students and `client` for employers; client fields are only accepted for client accounts.
  *     requestBody:
  *       required: true
  *       content:
@@ -294,8 +297,24 @@
  *     responses:
  *       200:
  *         description: Registered successfully.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Client registered successfully
+ *               data:
+ *                 id: 1
+ *                 first_name: Sara
+ *                 last_name: Hassan
+ *                 email: sara@example.com
+ *                 type: client
  *       400:
  *         description: Validation or duplicate email error.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: false
+ *               message: Email already exists
  */
 
 /**
@@ -304,6 +323,7 @@
  *   post:
  *     tags: [Auth]
  *     summary: Create a password reset code
+ *     description: Use this on the forgot-password screen to request a reset code for a user or client account.
  *     requestBody:
  *       required: true
  *       content:
@@ -315,12 +335,24 @@
  *               email:
  *                 type: string
  *                 format: email
+ *                 example: ahmed@example.com
  *               type:
  *                 type: string
  *                 enum: [user, client]
+ *                 example: user
  *     responses:
  *       200:
  *         description: Password reset code created.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Password reset code created successfully
+ *               data:
+ *                 email: ahmed@example.com
+ *                 type: user
+ *                 code: "123456"
+ *                 expires_in_minutes: 15
  *       404:
  *         description: Account not found.
  */
@@ -331,6 +363,7 @@
  *   post:
  *     tags: [Auth]
  *     summary: Reset password using a code
+ *     description: Use this after the user enters the reset code and new password.
  *     requestBody:
  *       required: true
  *       content:
@@ -342,9 +375,11 @@
  *               email:
  *                 type: string
  *                 format: email
+ *                 example: ahmed@example.com
  *               type:
  *                 type: string
  *                 enum: [user, client]
+ *                 example: user
  *               code:
  *                 type: string
  *                 example: "123456"
@@ -354,6 +389,11 @@
  *     responses:
  *       200:
  *         description: Password reset successfully.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Password reset successfully
  *       400:
  *         description: Invalid or expired code.
  */
@@ -364,14 +404,25 @@
  *   get:
  *     tags: [Users]
  *     summary: Get my user profile
+ *     description: Use this on the authenticated student profile edit page to load the current profile data.
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Current user profile.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 user_id: 1
+ *                 skills: [node, mysql]
+ *                 speciality: backend
+ *                 university: Cairo University
  *   put:
  *     tags: [Users]
  *     summary: Update my user profile
+ *     description: Use this when a student saves profile skills, speciality, certificates, projects, university, and social links.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -383,6 +434,15 @@
  *     responses:
  *       200:
  *         description: Profile updated.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Profile updated successfully
+ *               data:
+ *                 user_id: 1
+ *                 skills: [node, mysql]
+ *                 speciality: backend
  */
 
 /**
@@ -391,6 +451,7 @@
  *   get:
  *     tags: [Users]
  *     summary: Get public user profile
+ *     description: Use this on public student profile pages or when a client reviews applicants.
  *     parameters:
  *       - in: path
  *         name: user_id
@@ -400,6 +461,18 @@
  *     responses:
  *       200:
  *         description: Public profile.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 user:
+ *                   id: 1
+ *                   first_name: Ahmed
+ *                   email: ahmed@example.com
+ *                 profile:
+ *                   speciality: backend
+ *                   skills: [node]
  *       404:
  *         description: User not found.
  */
@@ -409,12 +482,22 @@
  * /user/jobs:
  *   get:
  *     tags: [Jobs]
- *     summary: List open jobs matching the authenticated user's speciality
+ *     summary: List matching jobs
+ *     description: Use this in the student job feed. It returns only open jobs that match the student's saved speciality.
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Matching open jobs.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 - id: 1
+ *                   title: Build API
+ *                   speciality: backend
+ *                   status: open
  */
 
 /**
@@ -422,12 +505,21 @@
  * /user/offers:
  *   get:
  *     tags: [Jobs]
- *     summary: List my job offers
+ *     summary: List my offers
+ *     description: Use this in the student dashboard to show offers the student has sent and their current status.
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Offers sent by the authenticated user.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 - id: 1
+ *                   job_id: 1
+ *                   status: pending
  */
 
 /**
@@ -435,7 +527,8 @@
  * /user/jobs/{job_id}/offers:
  *   post:
  *     tags: [Jobs]
- *     summary: Apply to a job by sending an offer
+ *     summary: Apply to job
+ *     description: Use this on the job details page when a student submits an offer with budget and estimated delivery time.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -453,6 +546,15 @@
  *     responses:
  *       201:
  *         description: Offer sent.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Offer sent successfully
+ *               data:
+ *                 id: 1
+ *                 job_id: 1
+ *                 status: pending
  */
 
 /**
@@ -460,7 +562,8 @@
  * /user/jobs/{job_id}/submit-completion:
  *   post:
  *     tags: [Jobs]
- *     summary: Submit completed files for a job
+ *     summary: Submit job completion files
+ *     description: Use this when the assigned student uploads final deliverables for review.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -478,6 +581,18 @@
  *     responses:
  *       200:
  *         description: Completion files submitted.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Completion files submitted successfully
+ *               data:
+ *                 job:
+ *                   id: 1
+ *                   status: in_progress
+ *                 attachments:
+ *                   - id: 1
+ *                     file_name: final.zip
  */
 
 /**
@@ -485,7 +600,8 @@
  * /user/jobs/{job_id}/approve-completion:
  *   post:
  *     tags: [Jobs]
- *     summary: User approves job completion
+ *     summary: User approves completion
+ *     description: Use this when the student confirms the submitted work should be considered complete; completion is final only after client approval too.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -497,6 +613,14 @@
  *     responses:
  *       200:
  *         description: Completion approved by user.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Job completion approved successfully
+ *               data:
+ *                 id: 1
+ *                 status: completed
  */
 
 /**
@@ -505,9 +629,13 @@
  *   get:
  *     tags: [Clients]
  *     summary: Client index
+ *     description: Use this only as a simple client-route smoke test.
  *     responses:
  *       200:
  *         description: Client API plain text response.
+ *         content:
+ *           text/plain:
+ *             example: client API
  */
 
 /**
@@ -516,14 +644,23 @@
  *   get:
  *     tags: [Clients]
  *     summary: Get client profile
+ *     description: Use this on the authenticated client company profile screen.
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Client profile.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 id: 1
+ *                 company_name: Skill Link
  *   put:
  *     tags: [Clients]
  *     summary: Update client profile
+ *     description: Use this when a client updates their company profile and contact data.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -535,6 +672,14 @@
  *     responses:
  *       200:
  *         description: Client profile updated.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Client profile updated successfully
+ *               data:
+ *                 id: 1
+ *                 company_name: Skill Link
  */
 
 /**
@@ -542,7 +687,8 @@
  * /client/jobs:
  *   post:
  *     tags: [Jobs]
- *     summary: Create a job
+ *     summary: Create job
+ *     description: Use this from the client job-posting form. Jobs start as public/open until an offer is accepted.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -554,14 +700,32 @@
  *     responses:
  *       201:
  *         description: Job created.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Job created successfully
+ *               data:
+ *                 id: 1
+ *                 title: Build API
+ *                 status: open
  *   get:
  *     tags: [Jobs]
- *     summary: List jobs created by the authenticated client
+ *     summary: List client jobs
+ *     description: Use this in the client dashboard to show all jobs posted by the authenticated client.
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Client jobs.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 - id: 1
+ *                   title: Build API
+ *                   status: open
  */
 
 /**
@@ -569,7 +733,8 @@
  * /client/jobs/{job_id}/offers:
  *   get:
  *     tags: [Jobs]
- *     summary: List offers for a client job
+ *     summary: List offers for job
+ *     description: Use this on the client job details page to review students' offers for one job.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -581,6 +746,15 @@
  *     responses:
  *       200:
  *         description: Offers for the job.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 - id: 1
+ *                   job_id: 1
+ *                   user_id: 1
+ *                   status: pending
  */
 
 /**
@@ -588,7 +762,8 @@
  * /client/offers/{offer_id}/accept:
  *   post:
  *     tags: [Jobs]
- *     summary: Accept an offer and create a chat room
+ *     summary: Accept offer
+ *     description: Use this when a client accepts a student offer. It holds funds from the client wallet, hides the job from public listings, rejects other pending offers, and creates a chat room.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -600,6 +775,20 @@
  *     responses:
  *       200:
  *         description: Offer accepted and funds held.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Offer accepted successfully
+ *               data:
+ *                 job:
+ *                   id: 1
+ *                   status: in_progress
+ *                 offer:
+ *                   id: 1
+ *                   status: accepted
+ *                 chat_room:
+ *                   id: 1
  */
 
 /**
@@ -607,7 +796,8 @@
  * /client/jobs/{job_id}/approve-completion:
  *   post:
  *     tags: [Jobs]
- *     summary: Client approves job completion
+ *     summary: Client approves completion
+ *     description: Use this when the client approves submitted final files. If the student has also approved, funds are released to the student's wallet.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -619,6 +809,14 @@
  *     responses:
  *       200:
  *         description: Completion approved by client.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Job completion approved successfully
+ *               data:
+ *                 id: 1
+ *                 status: completed
  */
 
 /**
@@ -626,12 +824,20 @@
  * /chats:
  *   get:
  *     tags: [Chats]
- *     summary: List chat rooms for the authenticated account
+ *     summary: List chat rooms
+ *     description: Use this in the chat inbox for either authenticated clients or students.
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Chat rooms.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 - id: 1
+ *                   job_id: 1
  */
 
 /**
@@ -640,6 +846,7 @@
  *   get:
  *     tags: [Chats]
  *     summary: List chat tasks
+ *     description: Use this in the chat room task panel to display todo items for a job conversation.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -651,9 +858,18 @@
  *     responses:
  *       200:
  *         description: Chat tasks.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 - id: 1
+ *                   title: Review final files
+ *                   status: todo
  *   post:
  *     tags: [Chats]
  *     summary: Create chat task
+ *     description: Use this to add a todo item inside an accepted job chat room.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -671,6 +887,15 @@
  *     responses:
  *       201:
  *         description: Task created.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Task created successfully
+ *               data:
+ *                 id: 1
+ *                 title: Review final files
+ *                 status: todo
  */
 
 /**
@@ -679,6 +904,7 @@
  *   put:
  *     tags: [Chats]
  *     summary: Update chat task status
+ *     description: Use this when a user marks a chat task as todo or done.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -696,6 +922,14 @@
  *     responses:
  *       200:
  *         description: Task updated.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Task updated successfully
+ *               data:
+ *                 id: 1
+ *                 status: done
  */
 
 /**
@@ -704,6 +938,7 @@
  *   get:
  *     tags: [Chats]
  *     summary: List chat attachments
+ *     description: Use this to show all files shared inside an accepted job chat room.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -715,9 +950,18 @@
  *     responses:
  *       200:
  *         description: Chat attachments.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 - id: 1
+ *                   file_name: notes.pdf
+ *                   purpose: chat
  *   post:
  *     tags: [Chats]
  *     summary: Create chat attachment
+ *     description: Use this after uploading a file elsewhere to attach its URL to a chat room.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -735,6 +979,14 @@
  *     responses:
  *       201:
  *         description: Attachment created.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Attachment created successfully
+ *               data:
+ *                 id: 1
+ *                 file_name: notes.pdf
  */
 
 /**
@@ -742,12 +994,21 @@
  * /payments/wallet:
  *   get:
  *     tags: [Payments]
- *     summary: Get authenticated account wallet
+ *     summary: Get wallet
+ *     description: Use this anywhere the frontend needs to show wallet balance and held balance for the authenticated account.
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Wallet.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 id: 1
+ *                 balance: "500.00"
+ *                 held_balance: "0.00"
  */
 
 /**
@@ -755,7 +1016,8 @@
  * /payments/top-up:
  *   post:
  *     tags: [Payments]
- *     summary: Top up wallet through the sudo payment gateway
+ *     summary: Top up wallet
+ *     description: Use this in wallet funding screens. It uses the sudo payment gateway now and can be swapped for a real gateway later.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -767,6 +1029,17 @@
  *     responses:
  *       200:
  *         description: Wallet topped up.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Wallet topped up successfully
+ *               data:
+ *                 payment:
+ *                   status: paid
+ *                   transaction_id: sudo_123
+ *                 wallet:
+ *                   balance: "500.00"
  */
 
 /**
@@ -775,6 +1048,7 @@
  *   get:
  *     tags: [Docs]
  *     summary: Swagger UI
+ *     description: Use this in the browser to explore the API visually.
  *     responses:
  *       200:
  *         description: Swagger UI HTML.
@@ -782,7 +1056,14 @@
  *   get:
  *     tags: [Docs]
  *     summary: Raw OpenAPI JSON
+ *     description: Use this if another tool needs the generated OpenAPI JSON document.
  *     responses:
  *       200:
  *         description: OpenAPI JSON document.
+ *         content:
+ *           application/json:
+ *             example:
+ *               openapi: 3.0.0
+ *               info:
+ *                 title: SkillLink API
  */
