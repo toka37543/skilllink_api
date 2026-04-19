@@ -64,8 +64,9 @@ async function login(req, res, next) {
 
 async function register(req, res) {
   const schema = joi.object({
-    first_name: joi.string().required(),
-    last_name: joi.string().required(),
+    first_name: joi.string().required().allow(null),
+    last_name: joi.string().required().allow(null),
+    username: joi.string().required(),
     email: joi.string().email().required(),
     password: joi.string().min(8).required(),
     type: joi.string().valid("user", "client").required(),

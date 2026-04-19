@@ -3,8 +3,9 @@ const db = require("../lib/db");
 class User {
   static async create(data, connection = db) {
     const [result] = await connection.execute(
-      "INSERT INTO users (first_name, last_name, email, password, country_code, phone_number) VALUES (?, ?, ?, ?, ?, ?)",
+      "INSERT INTO users (username, first_name, last_name, email, password, country_code, phone_number) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
+        data.username,
         data.first_name,
         data.last_name,
         data.email,
@@ -19,7 +20,7 @@ class User {
 
   static async findById(id, connection = db) {
     const [rows] = await connection.execute(
-      "SELECT id, first_name, last_name, email, country_code, phone_number, created_at, updated_at FROM users WHERE id = ? LIMIT 1",
+      "SELECT id, username, first_name, last_name, email, country_code, phone_number, created_at, updated_at FROM users WHERE id = ? LIMIT 1",
       [id]
     );
 
@@ -28,7 +29,7 @@ class User {
 
   static async findByEmail(email, connection = db) {
     const [rows] = await connection.execute(
-      "SELECT id, first_name, last_name, email, country_code, phone_number, password, created_at, updated_at FROM users WHERE email = ? LIMIT 1",
+      "SELECT id, username, first_name, last_name, email, country_code, phone_number, password, created_at, updated_at FROM users WHERE email = ? LIMIT 1",
       [email]
     );
 
@@ -37,7 +38,7 @@ class User {
 
   static async list(connection = db) {
     const [rows] = await connection.execute(
-      "SELECT id, first_name, last_name, email, country_code, phone_number, created_at, updated_at FROM users ORDER BY id DESC"
+      "SELECT id, username, first_name, last_name, email, country_code, phone_number, created_at, updated_at FROM users ORDER BY id DESC"
     );
 
     return rows;

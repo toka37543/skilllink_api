@@ -3,8 +3,9 @@ const db = require("../lib/db");
 class Client {
   static async create(data, connection = db) {
     const [result] = await connection.execute(
-      "INSERT INTO clients (first_name, last_name, email, password, country_code, phone_number, company_name, company_details) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO clients (username, first_name, last_name, email, password, country_code, phone_number, company_name, company_details) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
+        data.username,
         data.first_name,
         data.last_name,
         data.email,
@@ -21,7 +22,7 @@ class Client {
 
   static async findById(id, connection = db) {
     const [rows] = await connection.execute(
-      "SELECT id, first_name, last_name, email, country_code, phone_number, company_name, company_details, created_at, updated_at FROM clients WHERE id = ? LIMIT 1",
+      "SELECT id, username, first_name, last_name, email, country_code, phone_number, company_name, company_details, created_at, updated_at FROM clients WHERE id = ? LIMIT 1",
       [id]
     );
 
@@ -30,7 +31,7 @@ class Client {
 
   static async findByEmail(email, connection = db) {
     const [rows] = await connection.execute(
-      "SELECT id, first_name, last_name, email, country_code, phone_number, company_name, company_details, password, created_at, updated_at FROM clients WHERE email = ? LIMIT 1",
+      "SELECT id, username, first_name, last_name, email, country_code, phone_number, company_name, company_details, password, created_at, updated_at FROM clients WHERE email = ? LIMIT 1",
       [email]
     );
 
@@ -43,8 +44,9 @@ class Client {
 
   static async updateProfile(id, data, connection = db) {
     await connection.execute(
-      "UPDATE clients SET first_name = ?, last_name = ?, country_code = ?, phone_number = ?, company_name = ?, company_details = ? WHERE id = ?",
+      "UPDATE clients SET username = ?, first_name = ?, last_name = ?, country_code = ?, phone_number = ?, company_name = ?, company_details = ? WHERE id = ?",
       [
+        data.username,
         data.first_name,
         data.last_name,
         data.country_code ?? null,

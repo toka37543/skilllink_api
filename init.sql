@@ -184,3 +184,8 @@ CREATE TABLE IF NOT EXISTS chat_attachments (
 -- FLAGS: PRIMARY, UNIQUE, NOT_NULL, AUTO_INCREMENT, DEFAULT 'default_value'
 -- CURRENT_TIMESTAMP the default value is the current timestamp
 
+-- add username field to users table and make first_name and last_name nullable
+ALTER TABLE users
+ADD COLUMN username VARCHAR(190) NOT NULL UNIQUE AFTER id,
+MODIFY COLUMN first_name VARCHAR(190) NULL,
+MODIFY COLUMN last_name VARCHAR(190) NULL;
