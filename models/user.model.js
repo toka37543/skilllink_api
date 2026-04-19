@@ -3,13 +3,11 @@ const db = require("../lib/db");
 class User {
   static async create(data, connection = db) {
     const [result] = await connection.execute(
-      "INSERT INTO users (username, email, password, country_code, phone_number) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
       [
         data.username,
         data.email,
-        data.password,
-        data.country_code ?? null,
-        data.phone_number ?? null
+        data.password
       ]
     );
 
@@ -50,10 +48,12 @@ class User {
     const current = await this.findById(id, connection);
 
     await connection.execute(
-      "UPDATE users SET first_name = ?, last_name = ? WHERE id = ?",
+      "UPDATE users SET first_name = ?, last_name = ?, country_code = ?, phone_number = ? WHERE id = ?",
       [
         data.first_name ?? current?.first_name ?? null,
         data.last_name ?? current?.last_name ?? null,
+        data.country_code ?? current?.country_code ?? null,
+        data.phone_number ?? current?.phone_number ?? null,
         id
       ]
     );

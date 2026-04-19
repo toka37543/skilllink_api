@@ -40,18 +40,6 @@
  *           type: string
  *           enum: [user, client]
  *           example: client
- *         country_code:
- *           type: string
- *           example: "+20"
- *         phone_number:
- *           type: string
- *           example: "1000000000"
- *         company_name:
- *           type: string
- *           example: Skill Link
- *         company_details:
- *           type: string
- *           example: Hiring company profile
  *     UserProfileRequest:
  *       type: object
  *       required: [speciality]
@@ -62,6 +50,12 @@
  *         last_name:
  *           type: string
  *           example: Ali
+ *         country_code:
+ *           type: string
+ *           example: "+20"
+ *         phone_number:
+ *           type: string
+ *           example: "1000000000"
  *         skills:
  *           type: array
  *           items:
@@ -290,7 +284,7 @@
  *   post:
  *     tags: [Auth]
  *     summary: Register a user or client
- *     description: Use this on signup screens. Send type `user` for students and `client` for employers; client fields are only accepted for client accounts.
+ *     description: Use this on signup screens. It only creates login credentials and account type. Profile details are completed later through profile update endpoints.
  *     requestBody:
  *       required: true
  *       content:

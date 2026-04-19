@@ -67,19 +67,7 @@ async function register(req, res) {
     username: joi.string().required(),
     email: joi.string().email().required(),
     password: joi.string().min(8).required(),
-    type: joi.string().valid("user", "client").required(),
-    country_code: joi.string().optional(),
-    phone_number: joi.string().optional(),
-    company_name: joi.when("type", {
-      is: "client",
-      then: joi.string().optional(),
-      otherwise: joi.forbidden()
-    }),
-    company_details: joi.when("type", {
-      is: "client",
-      then: joi.string().optional(),
-      otherwise: joi.forbidden()
-    })
+    type: joi.string().valid("user", "client").required()
   });
 
   const validation = schema.validate(req.body);

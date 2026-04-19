@@ -106,11 +106,7 @@ Register
   "username": "ahmed123",
   "email": "ahmed@example.com",
   "password": "password123",
-  "type": "client",
-  "country_code": "+20",
-  "phone_number": "1000000000",
-  "company_name": "Skill Link",
-  "company_details": "Hiring company profile"
+  "type": "client"
 }
 ```
 
@@ -221,6 +217,8 @@ Update My User Profile
 {
   "first_name": "Ahmed",
   "last_name": "Ali",
+  "country_code": "+20",
+  "phone_number": "1000000000",
   "skills": ["node", "mysql"],
   "speciality": "backend",
   "certificates": [{"name": "Backend Certificate"}],

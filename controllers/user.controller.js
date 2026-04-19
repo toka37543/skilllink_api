@@ -37,6 +37,8 @@ async function updateProfile(req, res) {
   const schema = joi.object({
     first_name: joi.string().optional(),
     last_name: joi.string().optional(),
+    country_code: joi.string().optional(),
+    phone_number: joi.string().optional(),
     skills: joi.array().items(joi.string()).optional(),
     speciality: joi.string().required(),
     certificates: joi.array().items(joi.object()).optional(),
