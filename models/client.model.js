@@ -3,11 +3,9 @@ const db = require("../lib/db");
 class Client {
   static async create(data, connection = db) {
     const [result] = await connection.execute(
-      "INSERT INTO clients (username, first_name, last_name, email, password, country_code, phone_number, company_name, company_details) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO clients (username, email, password, country_code, phone_number, company_name, company_details) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
         data.username,
-        data.first_name,
-        data.last_name,
         data.email,
         data.password,
         data.country_code ?? null,
@@ -43,10 +41,12 @@ class Client {
   }
 
   static async updateProfile(id, data, connection = db) {
+    const current = await this.findById(id, connection);
+
     await connection.execute(
       "UPDATE clients SET username = ?, first_name = ?, last_name = ?, country_code = ?, phone_number = ?, company_name = ?, company_details = ? WHERE id = ?",
       [
-        data.username,
+        data.username ?? current?.username,
         data.first_name,
         data.last_name,
         data.country_code ?? null,

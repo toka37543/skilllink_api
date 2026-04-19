@@ -24,17 +24,11 @@
  *           example: user
  *     RegisterRequest:
  *       type: object
- *       required: [first_name, last_name, email, password, type]
+ *       required: [username, email, password, type]
  *       properties:
  *         username:
- *          type: string
- *          example: ahmed123
- *         first_name:
  *           type: string
- *           example: Ahmed
- *         last_name:
- *           type: string
- *           example: Ali
+ *           example: ahmed123
  *         email:
  *           type: string
  *           format: email
@@ -62,6 +56,12 @@
  *       type: object
  *       required: [speciality]
  *       properties:
+ *         first_name:
+ *           type: string
+ *           example: Ahmed
+ *         last_name:
+ *           type: string
+ *           example: Ali
  *         skills:
  *           type: array
  *           items:
@@ -307,8 +307,7 @@
  *               message: Client registered successfully
  *               data:
  *                 id: 1
- *                 first_name: Sara
- *                 last_name: Hassan
+ *                 username: sara123
  *                 email: sara@example.com
  *                 type: client
  *       400:
@@ -443,9 +442,14 @@
  *               success: true
  *               message: Profile updated successfully
  *               data:
- *                 user_id: 1
- *                 skills: [node, mysql]
- *                 speciality: backend
+ *                 user:
+ *                   id: 1
+ *                   first_name: Ahmed
+ *                   last_name: Ali
+ *                 profile:
+ *                   user_id: 1
+ *                   skills: [node, mysql]
+ *                   speciality: backend
  */
 
 /**

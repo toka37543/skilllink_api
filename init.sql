@@ -6,8 +6,9 @@ USE skill_link_db;
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    first_name VARCHAR(190) NOT NULL,
-    last_name VARCHAR(190) NOT NULL,
+    username VARCHAR(190) NOT NULL UNIQUE,
+    first_name VARCHAR(190) NULL,
+    last_name VARCHAR(190) NULL,
     email VARCHAR(190) NOT NULL UNIQUE,
     country_code VARCHAR(10) NULL,
     phone_number VARCHAR(50) NULL,
@@ -19,8 +20,9 @@ CREATE TABLE IF NOT EXISTS users (
 -- Create table for clients aka companies/employers
 CREATE TABLE IF NOT EXISTS clients (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    first_name VARCHAR(190) NOT NULL,
-    last_name VARCHAR(190) NOT NULL,
+    username VARCHAR(190) NOT NULL UNIQUE,
+    first_name VARCHAR(190) NULL,
+    last_name VARCHAR(190) NULL,
     email VARCHAR(190) NOT NULL UNIQUE,
     country_code VARCHAR(10) NULL,
     phone_number VARCHAR(50) NULL,
@@ -183,9 +185,3 @@ CREATE TABLE IF NOT EXISTS chat_attachments (
 -- COLUMN_NAME DATA_TYPE (FLAGS) 
 -- FLAGS: PRIMARY, UNIQUE, NOT_NULL, AUTO_INCREMENT, DEFAULT 'default_value'
 -- CURRENT_TIMESTAMP the default value is the current timestamp
-
--- add username field to users table and make first_name and last_name nullable
-ALTER TABLE users
-ADD COLUMN username VARCHAR(190) NOT NULL UNIQUE AFTER id,
-MODIFY COLUMN first_name VARCHAR(190) NULL,
-MODIFY COLUMN last_name VARCHAR(190) NULL;

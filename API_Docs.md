@@ -103,8 +103,7 @@ Register
 ### Request Body
 ```json
 {
-  "first_name": "Ahmed",
-  "last_name": "Ali",
+  "username": "ahmed123",
   "email": "ahmed@example.com",
   "password": "password123",
   "type": "client",
@@ -122,8 +121,7 @@ Register
   "message": "Client registered successfully",
   "data": {
     "id": 1,
-    "first_name": "Ahmed",
-    "last_name": "Ali",
+    "username": "ahmed123",
     "email": "ahmed@example.com",
     "type": "client"
   }
@@ -221,6 +219,8 @@ Update My User Profile
 ### Request Body
 ```json
 {
+  "first_name": "Ahmed",
+  "last_name": "Ali",
   "skills": ["node", "mysql"],
   "speciality": "backend",
   "certificates": [{"name": "Backend Certificate"}],
@@ -239,9 +239,16 @@ Update My User Profile
   "success": true,
   "message": "Profile updated successfully",
   "data": {
-    "user_id": 1,
-    "skills": ["node", "mysql"],
-    "speciality": "backend"
+    "user": {
+      "id": 1,
+      "first_name": "Ahmed",
+      "last_name": "Ali"
+    },
+    "profile": {
+      "user_id": 1,
+      "skills": ["node", "mysql"],
+      "speciality": "backend"
+    }
   }
 }
 ```

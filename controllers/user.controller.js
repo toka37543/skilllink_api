@@ -35,6 +35,8 @@ async function getPublicProfile(req, res) {
 
 async function updateProfile(req, res) {
   const schema = joi.object({
+    first_name: joi.string().optional(),
+    last_name: joi.string().optional(),
     skills: joi.array().items(joi.string()).optional(),
     speciality: joi.string().required(),
     certificates: joi.array().items(joi.object()).optional(),
@@ -54,12 +56,16 @@ async function updateProfile(req, res) {
     });
   }
 
+  const user = await User.updateProfile(req.account.id, validation.value);
   const profile = await UserProfile.upsert(req.account.id, validation.value);
 
   return res.send({
     success: true,
     message: "Profile updated successfully",
-    data: profile
+    data: {
+      user,
+      profile
+    }
   });
 }
 
