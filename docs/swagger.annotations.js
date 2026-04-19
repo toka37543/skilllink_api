@@ -26,6 +26,9 @@
  *       type: object
  *       required: [first_name, last_name, email, password, type]
  *       properties:
+ *         username:
+ *          type: string
+ *          example: ahmed123
  *         first_name:
  *           type: string
  *           example: Ahmed
