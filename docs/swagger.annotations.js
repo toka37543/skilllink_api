@@ -346,7 +346,7 @@
  *   post:
  *     tags: [Auth]
  *     summary: Verify and update phone number
- *     description: Use this when a logged-in user or client changes their phone number. In local development the OTP is static: `123456`. A successful verification updates the account phone number and verification timestamp.
+ *     description: "Use this when a logged-in user or client changes their phone number. In local development the OTP is static: 123456. A successful verification updates the account phone number and verification timestamp."
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -490,7 +490,7 @@
  *   put:
  *     tags: [Users]
  *     summary: Update my user profile
- *     description: Use this when a student saves profile details. This is a partial update, so send only the fields that changed. Phone fields are not accepted here; use `POST /auth/phone/verify` after OTP verification.
+ *     description: "Use this when a student saves profile details. This is a partial update, so send only the fields that changed. Phone fields are not accepted here; use POST /auth/phone/verify after OTP verification."
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -527,7 +527,7 @@
  *   put:
  *     tags: [Users]
  *     summary: Update profile picture
- *     description: Use this to upload a student profile image directly to the API. The file is validated as JPG, PNG, or WEBP, must be 2MB or smaller, then is exposed through the static `/uploads/profile-pictures` path.
+ *     description: "Use this to upload a student profile image directly to the API. The file is validated as JPG, PNG, or WEBP, must be 2MB or smaller, then is exposed through the static /uploads/profile-pictures path."
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -778,7 +778,7 @@
  *   put:
  *     tags: [Clients]
  *     summary: Update client profile
- *     description: Use this when a client updates their company profile. This is a partial update. Phone fields are not accepted here; use `POST /auth/phone/verify` after OTP verification.
+ *     description: "Use this when a client updates their company profile. This is a partial update. Phone fields are not accepted here; use POST /auth/phone/verify after OTP verification."
  *     security:
  *       - bearerAuth: []
  *     requestBody:
