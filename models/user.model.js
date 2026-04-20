@@ -16,7 +16,7 @@ class User {
 
   static async findById(id, connection = db) {
     const [rows] = await connection.execute(
-      "SELECT id, username, first_name, last_name, email, country_code, phone_number, created_at, updated_at FROM users WHERE id = ? LIMIT 1",
+      "SELECT id, username, first_name, last_name, email, country_code, phone_number, phone_verified_at, created_at, updated_at FROM users WHERE id = ? LIMIT 1",
       [id]
     );
 
@@ -25,7 +25,7 @@ class User {
 
   static async findByEmail(email, connection = db) {
     const [rows] = await connection.execute(
-      "SELECT id, username, first_name, last_name, email, country_code, phone_number, password, created_at, updated_at FROM users WHERE email = ? LIMIT 1",
+      "SELECT id, username, first_name, last_name, email, country_code, phone_number, phone_verified_at, password, created_at, updated_at FROM users WHERE email = ? LIMIT 1",
       [email]
     );
 
@@ -34,7 +34,7 @@ class User {
 
   static async list(connection = db) {
     const [rows] = await connection.execute(
-      "SELECT id, username, first_name, last_name, email, country_code, phone_number, created_at, updated_at FROM users ORDER BY id DESC"
+      "SELECT id, username, first_name, last_name, email, country_code, phone_number, phone_verified_at, created_at, updated_at FROM users ORDER BY id DESC"
     );
 
     return rows;
@@ -48,14 +48,21 @@ class User {
     const current = await this.findById(id, connection);
 
     await connection.execute(
-      "UPDATE users SET first_name = ?, last_name = ?, country_code = ?, phone_number = ? WHERE id = ?",
+      "UPDATE users SET first_name = ?, last_name = ? WHERE id = ?",
       [
         data.first_name ?? current?.first_name ?? null,
         data.last_name ?? current?.last_name ?? null,
-        data.country_code ?? current?.country_code ?? null,
-        data.phone_number ?? current?.phone_number ?? null,
         id
       ]
+    );
+
+    return this.findById(id, connection);
+  }
+
+  static async updatePhone(id, data, connection = db) {
+    await connection.execute(
+      "UPDATE users SET country_code = ?, phone_number = ?, phone_verified_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [data.country_code, data.phone_number, id]
     );
 
     return this.findById(id, connection);

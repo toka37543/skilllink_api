@@ -35,19 +35,23 @@ async function getPublicProfile(req, res) {
 
 async function updateProfile(req, res) {
   const schema = joi.object({
-    first_name: joi.string().optional(),
-    last_name: joi.string().optional(),
-    country_code: joi.string().optional(),
-    phone_number: joi.string().optional(),
-    skills: joi.array().items(joi.string()).optional(),
-    speciality: joi.string().required(),
-    certificates: joi.array().items(joi.object()).optional(),
-    university: joi.string().optional(),
-    projects: joi.array().items(joi.object()).optional(),
-    github_url: joi.string().uri().optional(),
-    behance_url: joi.string().uri().optional(),
-    linkedin_url: joi.string().uri().optional(),
-    social_links: joi.object().optional()
+    first_name: joi.string().allow(null, "").optional(),
+    last_name: joi.string().allow(null, "").optional(),
+    skills: joi.array().items(joi.string()).allow(null).optional(),
+    speciality: joi.string().allow(null, "").optional(),
+    certificates: joi.array().items(joi.object()).allow(null).optional(),
+    university: joi.string().allow(null, "").optional(),
+    college: joi.string().allow(null, "").optional(),
+    study_years: joi.string().allow(null, "").optional(),
+    date_of_birth: joi.date().iso().allow(null).optional(),
+    address: joi.string().allow(null, "").optional(),
+    languages: joi.array().items(joi.string()).allow(null).optional(),
+    brief: joi.string().allow(null, "").optional(),
+    projects: joi.array().items(joi.object()).allow(null).optional(),
+    github_url: joi.string().uri().allow(null, "").optional(),
+    behance_url: joi.string().uri().allow(null, "").optional(),
+    linkedin_url: joi.string().uri().allow(null, "").optional(),
+    social_links: joi.object().allow(null).optional()
   });
 
   const validation = schema.validate(req.body);
@@ -67,6 +71,36 @@ async function updateProfile(req, res) {
     data: {
       user,
       profile
+    }
+  });
+}
+
+async function updateProfilePicture(req, res) {
+  if (!req.uploadedFile) {
+    return res.status(400).send({
+      success: false,
+      message: "Missing profile picture upload"
+    });
+  }
+
+  const baseUrl = (process.env.API_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
+  const profilePictureUrl = `${baseUrl}${req.uploadedFile.publicPath}`;
+  const profile = await UserProfile.updateProfilePicture(
+    req.account.id,
+    profilePictureUrl
+  );
+
+  return res.send({
+    success: true,
+    message: "Profile picture updated successfully",
+    data: {
+      profile,
+      file: {
+        url: profilePictureUrl,
+        path: req.uploadedFile.publicPath,
+        mime_type: req.uploadedFile.mimeType,
+        size: req.uploadedFile.size
+      }
     }
   });
 }
@@ -97,6 +131,7 @@ module.exports = {
   getProfile,
   getPublicProfile,
   updateProfile,
+  updateProfilePicture,
   listMatchingJobs,
   listOffers
 };

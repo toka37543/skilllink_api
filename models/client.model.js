@@ -16,7 +16,7 @@ class Client {
 
   static async findById(id, connection = db) {
     const [rows] = await connection.execute(
-      "SELECT id, username, first_name, last_name, email, country_code, phone_number, company_name, company_details, created_at, updated_at FROM clients WHERE id = ? LIMIT 1",
+      "SELECT id, username, first_name, last_name, email, country_code, phone_number, phone_verified_at, company_name, company_details, created_at, updated_at FROM clients WHERE id = ? LIMIT 1",
       [id]
     );
 
@@ -25,7 +25,7 @@ class Client {
 
   static async findByEmail(email, connection = db) {
     const [rows] = await connection.execute(
-      "SELECT id, username, first_name, last_name, email, country_code, phone_number, company_name, company_details, password, created_at, updated_at FROM clients WHERE email = ? LIMIT 1",
+      "SELECT id, username, first_name, last_name, email, country_code, phone_number, phone_verified_at, company_name, company_details, password, created_at, updated_at FROM clients WHERE email = ? LIMIT 1",
       [email]
     );
 
@@ -40,17 +40,24 @@ class Client {
     const current = await this.findById(id, connection);
 
     await connection.execute(
-      "UPDATE clients SET username = ?, first_name = ?, last_name = ?, country_code = ?, phone_number = ?, company_name = ?, company_details = ? WHERE id = ?",
+      "UPDATE clients SET username = ?, first_name = ?, last_name = ?, company_name = ?, company_details = ? WHERE id = ?",
       [
         data.username ?? current?.username,
-        data.first_name,
-        data.last_name,
-        data.country_code ?? null,
-        data.phone_number ?? null,
-        data.company_name ?? null,
-        data.company_details ?? null,
+        data.first_name ?? current?.first_name ?? null,
+        data.last_name ?? current?.last_name ?? null,
+        data.company_name ?? current?.company_name ?? null,
+        data.company_details ?? current?.company_details ?? null,
         id
       ]
+    );
+
+    return this.findById(id, connection);
+  }
+
+  static async updatePhone(id, data, connection = db) {
+    await connection.execute(
+      "UPDATE clients SET country_code = ?, phone_number = ?, phone_verified_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [data.country_code, data.phone_number, id]
     );
 
     return this.findById(id, connection);

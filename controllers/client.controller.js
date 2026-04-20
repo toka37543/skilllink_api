@@ -16,12 +16,10 @@ async function getProfile(req, res) {
 
 async function updateProfile(req, res) {
   const schema = joi.object({
-    first_name: joi.string().required(),
-    last_name: joi.string().required(),
-    country_code: joi.string().optional(),
-    phone_number: joi.string().optional(),
-    company_name: joi.string().optional(),
-    company_details: joi.string().optional()
+    first_name: joi.string().allow(null, "").optional(),
+    last_name: joi.string().allow(null, "").optional(),
+    company_name: joi.string().allow(null, "").optional(),
+    company_details: joi.string().allow(null, "").optional()
   });
 
   const validation = schema.validate(req.body);

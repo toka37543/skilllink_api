@@ -42,7 +42,6 @@
  *           example: client
  *     UserProfileRequest:
  *       type: object
- *       required: [speciality]
  *       properties:
  *         first_name:
  *           type: string
@@ -50,12 +49,6 @@
  *         last_name:
  *           type: string
  *           example: Ali
- *         country_code:
- *           type: string
- *           example: "+20"
- *         phone_number:
- *           type: string
- *           example: "1000000000"
  *         skills:
  *           type: array
  *           items:
@@ -72,6 +65,27 @@
  *         university:
  *           type: string
  *           example: Cairo University
+ *         college:
+ *           type: string
+ *           example: Faculty of Computers and Artificial Intelligence
+ *         study_years:
+ *           type: string
+ *           example: 2019-2023
+ *         date_of_birth:
+ *           type: string
+ *           format: date
+ *           example: 2001-05-15
+ *         address:
+ *           type: string
+ *           example: Cairo, Egypt
+ *         languages:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: [Arabic, English]
+ *         brief:
+ *           type: string
+ *           example: Backend developer focused on Node.js and MySQL APIs.
  *         projects:
  *           type: array
  *           items:
@@ -89,9 +103,28 @@
  *         social_links:
  *           type: object
  *           example: { portfolio: https://example.com }
+ *     PhoneVerificationRequest:
+ *       type: object
+ *       required: [country_code, phone_number, otp]
+ *       properties:
+ *         country_code:
+ *           type: string
+ *           example: "+20"
+ *         phone_number:
+ *           type: string
+ *           example: "1000000000"
+ *         otp:
+ *           type: string
+ *           example: "123456"
+ *     ProfilePictureRequest:
+ *       type: object
+ *       required: [profile_picture]
+ *       properties:
+ *         profile_picture:
+ *           type: string
+ *           format: binary
  *     ClientProfileRequest:
  *       type: object
- *       required: [first_name, last_name]
  *       properties:
  *         first_name:
  *           type: string
@@ -99,12 +132,6 @@
  *         last_name:
  *           type: string
  *           example: Hassan
- *         country_code:
- *           type: string
- *           example: "+20"
- *         phone_number:
- *           type: string
- *           example: "1000000000"
  *         company_name:
  *           type: string
  *           example: Skill Link
@@ -315,6 +342,44 @@
 
 /**
  * @swagger
+ * /auth/phone/verify:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Verify and update phone number
+ *     description: Use this when a logged-in user or client changes their phone number. In local development the OTP is static: `123456`. A successful verification updates the account phone number and verification timestamp.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/PhoneVerificationRequest'
+ *     responses:
+ *       200:
+ *         description: Phone verified and updated.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Phone number verified and updated successfully
+ *               data:
+ *                 id: 1
+ *                 country_code: "+20"
+ *                 phone_number: "1000000000"
+ *                 phone_verified_at: 2026-04-20T10:00:00.000Z
+ *                 type: user
+ *       400:
+ *         description: Validation error or invalid OTP.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: false
+ *               message: Invalid phone verification OTP
+ */
+
+/**
+ * @swagger
  * /auth/forget-password:
  *   post:
  *     tags: [Auth]
@@ -415,10 +480,17 @@
  *                 skills: [node, mysql]
  *                 speciality: backend
  *                 university: Cairo University
+ *                 college: Faculty of Computers and Artificial Intelligence
+ *                 study_years: 2019-2023
+ *                 date_of_birth: 2001-05-15
+ *                 address: Cairo, Egypt
+ *                 languages: [Arabic, English]
+ *                 brief: Backend developer focused on Node.js and MySQL APIs.
+ *                 profile_picture_url: https://example.com/uploads/profile.jpg
  *   put:
  *     tags: [Users]
  *     summary: Update my user profile
- *     description: Use this when a student saves profile skills, speciality, certificates, projects, university, and social links.
+ *     description: Use this when a student saves profile details. This is a partial update, so send only the fields that changed. Phone fields are not accepted here; use `POST /auth/phone/verify` after OTP verification.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -444,6 +516,50 @@
  *                   user_id: 1
  *                   skills: [node, mysql]
  *                   speciality: backend
+ *                   university: Cairo University
+ *                   college: Faculty of Computers and Artificial Intelligence
+ *                   study_years: 2019-2023
+ */
+
+/**
+ * @swagger
+ * /user/profile-picture:
+ *   put:
+ *     tags: [Users]
+ *     summary: Update profile picture
+ *     description: Use this to upload a student profile image directly to the API. The file is validated as JPG, PNG, or WEBP, must be 2MB or smaller, then is exposed through the static `/uploads/profile-pictures` path.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/ProfilePictureRequest'
+ *     responses:
+ *       200:
+ *         description: Profile picture updated.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Profile picture updated successfully
+ *               data:
+ *                 profile:
+ *                   user_id: 1
+ *                   profile_picture_url: http://localhost:3003/uploads/profile-pictures/profile.jpg
+ *                 file:
+ *                   url: http://localhost:3003/uploads/profile-pictures/profile.jpg
+ *                   path: /uploads/profile-pictures/profile.jpg
+ *                   mime_type: image/jpeg
+ *                   size: 132456
+ *       400:
+ *         description: Missing or invalid image file.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: false
+ *               message: Profile picture must be a JPG, PNG, or WEBP image
  */
 
 /**
@@ -474,6 +590,7 @@
  *                 profile:
  *                   speciality: backend
  *                   skills: [node]
+ *                   profile_picture_url: https://example.com/uploads/profile.jpg
  *       404:
  *         description: User not found.
  */
@@ -661,7 +778,7 @@
  *   put:
  *     tags: [Clients]
  *     summary: Update client profile
- *     description: Use this when a client updates their company profile and contact data.
+ *     description: Use this when a client updates their company profile. This is a partial update. Phone fields are not accepted here; use `POST /auth/phone/verify` after OTP verification.
  *     security:
  *       - bearerAuth: []
  *     requestBody:

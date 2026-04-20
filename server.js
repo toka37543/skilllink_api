@@ -2,10 +2,17 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const { passport } = require('./lib/passport');
+const { profilePicturesDir } = require('./lib/file-upload');
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json())
 app.use(passport.initialize())
+app.use('/uploads/profile-pictures', express.static(profilePicturesDir, {
+  dotfiles: 'deny',
+  fallthrough: false,
+  index: false,
+  maxAge: '1d'
+}))
 
 /*
  * define where all the orutes are 

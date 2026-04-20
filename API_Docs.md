@@ -12,10 +12,12 @@ Authorization: Bearer <jwt-token>
 - [GET / Root](#root)
 - [POST /auth/login Login](#login)
 - [POST /auth/register Register](#register)
+- [POST /auth/phone/verify Verify Phone Number](#verify-phone-number)
 - [POST /auth/forget-password Forget Password](#forget-password)
 - [POST /auth/reset-password Reset Password](#reset-password)
 - [GET /user/profile Get My User Profile](#get-my-user-profile)
 - [PUT /user/profile Update My User Profile](#update-my-user-profile)
+- [PUT /user/profile-picture Update Profile Picture](#update-profile-picture)
 - [GET /user/profiles/:user_id Get Public User Profile](#get-public-user-profile)
 - [GET /user/jobs Get Matching Jobs](#get-matching-jobs)
 - [GET /user/offers Get My Offers](#get-my-offers)
@@ -124,6 +126,40 @@ Register
 }
 ```
 
+## Verify Phone Number
+
+### Name
+Verify Phone Number
+
+### Verb Path
+`POST /auth/phone/verify`
+
+### Request Body
+Use this endpoint when an authenticated user or client changes their phone number. For local development, send the static OTP `123456`.
+
+```json
+{
+  "country_code": "+20",
+  "phone_number": "1000000000",
+  "otp": "123456"
+}
+```
+
+### Response Body
+```json
+{
+  "success": true,
+  "message": "Phone number verified and updated successfully",
+  "data": {
+    "id": 1,
+    "country_code": "+20",
+    "phone_number": "1000000000",
+    "phone_verified_at": "2026-04-20T10:00:00.000Z",
+    "type": "user"
+  }
+}
+```
+
 ## Forget Password
 
 ### Name
@@ -199,7 +235,14 @@ No request body.
     "user_id": 1,
     "skills": ["node", "mysql"],
     "speciality": "backend",
-    "university": "Cairo University"
+    "university": "Cairo University",
+    "college": "Faculty of Computers and Artificial Intelligence",
+    "study_years": "2019-2023",
+    "date_of_birth": "2001-05-15",
+    "address": "Cairo, Egypt",
+    "languages": ["Arabic", "English"],
+    "brief": "Backend developer focused on Node.js and MySQL APIs.",
+    "profile_picture_url": "https://example.com/uploads/profile.jpg"
   }
 }
 ```
@@ -213,16 +256,22 @@ Update My User Profile
 `PUT /user/profile`
 
 ### Request Body
+This is a partial update. Send only the fields that changed. Phone fields are not accepted here; use `POST /auth/phone/verify`.
+
 ```json
 {
   "first_name": "Ahmed",
   "last_name": "Ali",
-  "country_code": "+20",
-  "phone_number": "1000000000",
   "skills": ["node", "mysql"],
   "speciality": "backend",
   "certificates": [{"name": "Backend Certificate"}],
   "university": "Cairo University",
+  "college": "Faculty of Computers and Artificial Intelligence",
+  "study_years": "2019-2023",
+  "date_of_birth": "2001-05-15",
+  "address": "Cairo, Egypt",
+  "languages": ["Arabic", "English"],
+  "brief": "Backend developer focused on Node.js and MySQL APIs.",
   "projects": [{"name": "SkillLink API", "url": "https://example.com"}],
   "github_url": "https://github.com/user",
   "behance_url": "https://behance.net/user",
@@ -245,7 +294,45 @@ Update My User Profile
     "profile": {
       "user_id": 1,
       "skills": ["node", "mysql"],
-      "speciality": "backend"
+      "speciality": "backend",
+      "university": "Cairo University",
+      "college": "Faculty of Computers and Artificial Intelligence",
+      "study_years": "2019-2023"
+    }
+  }
+}
+```
+
+## Update Profile Picture
+
+### Name
+Update Profile Picture
+
+### Verb Path
+`PUT /user/profile-picture`
+
+### Request Body
+Use this to upload a student profile image directly to the API. Send `multipart/form-data` with a file field named `profile_picture`. The file must be JPG, PNG, or WEBP and 2MB or smaller. The API stores the file locally and exposes it through the static `/uploads/profile-pictures` path.
+
+```text
+profile_picture: <binary jpg/png/webp file>
+```
+
+### Response Body
+```json
+{
+  "success": true,
+  "message": "Profile picture updated successfully",
+  "data": {
+    "profile": {
+      "user_id": 1,
+      "profile_picture_url": "http://localhost:3003/uploads/profile-pictures/profile.jpg"
+    },
+    "file": {
+      "url": "http://localhost:3003/uploads/profile-pictures/profile.jpg",
+      "path": "/uploads/profile-pictures/profile.jpg",
+      "mime_type": "image/jpeg",
+      "size": 132456
     }
   }
 }
@@ -268,7 +355,11 @@ No request body.
   "success": true,
   "data": {
     "user": {"id": 1, "first_name": "Ahmed"},
-    "profile": {"speciality": "backend", "skills": ["node"]}
+    "profile": {
+      "speciality": "backend",
+      "skills": ["node"],
+      "profile_picture_url": "https://example.com/uploads/profile.jpg"
+    }
   }
 }
 ```
@@ -450,12 +541,12 @@ Update Client Profile
 `PUT /client/profile`
 
 ### Request Body
+This is a partial update. Send only the fields that changed. Phone fields are not accepted here; use `POST /auth/phone/verify`.
+
 ```json
 {
   "first_name": "Sara",
   "last_name": "Hassan",
-  "country_code": "+20",
-  "phone_number": "1000000000",
   "company_name": "Skill Link",
   "company_details": "Hiring company profile"
 }
