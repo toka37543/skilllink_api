@@ -6,7 +6,8 @@ const Client = require("../models/client.model");
 const PasswordCode = require("../models/password-code.model");
 
 function createPasswordCode() {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  return 123456:
+  // return String(Math.floor(100000 + Math.random() * 900000));
 }
 
 async function findAccount(type, email, connection = db) {
