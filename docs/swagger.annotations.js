@@ -103,9 +103,9 @@
  *         social_links:
  *           type: object
  *           example: { portfolio: https://example.com }
- *     PhoneVerificationRequest:
+ *     PhoneOtpRequest:
  *       type: object
- *       required: [country_code, phone_number, otp]
+ *       required: [country_code, phone_number]
  *       properties:
  *         country_code:
  *           type: string
@@ -113,9 +113,15 @@
  *         phone_number:
  *           type: string
  *           example: "1000000000"
- *         otp:
- *           type: string
- *           example: "123456"
+ *     PhoneVerificationRequest:
+ *       allOf:
+ *         - $ref: '#/components/schemas/PhoneOtpRequest'
+ *         - type: object
+ *           required: [otp]
+ *           properties:
+ *             otp:
+ *               type: string
+ *               example: "123456"
  *     ProfilePictureRequest:
  *       type: object
  *       required: [profile_picture]
@@ -342,11 +348,42 @@
 
 /**
  * @swagger
- * /auth/phone/verify:
+ * /user/profile/phone/send-otp:
  *   post:
- *     tags: [Auth]
- *     summary: Verify and update phone number
- *     description: "Use this when a logged-in user or client changes their phone number. In local development the OTP is static: 123456. A successful verification updates the account phone number and verification timestamp."
+ *     tags: [Users]
+ *     summary: Send user phone verification OTP
+ *     description: "Step 1 for changing a student phone number. In local development the OTP is static: 123456 and is returned in the response."
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/PhoneOtpRequest'
+ *     responses:
+ *       200:
+ *         description: OTP sent.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Phone verification OTP sent successfully
+ *               data:
+ *                 country_code: "+20"
+ *                 phone_number: "1000000000"
+ *                 otp: "123456"
+ *       400:
+ *         description: Validation error.
+ */
+
+/**
+ * @swagger
+ * /user/profile/phone/verify:
+ *   put:
+ *     tags: [Users]
+ *     summary: Verify and update user phone number
+ *     description: "Step 2 for changing a student phone number. Send the phone number and OTP, then the API updates the account phone fields."
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -371,11 +408,70 @@
  *                 type: user
  *       400:
  *         description: Validation error or invalid OTP.
+ */
+
+/**
+ * @swagger
+ * /client/profile/phone/send-otp:
+ *   post:
+ *     tags: [Clients]
+ *     summary: Send client phone verification OTP
+ *     description: "Step 1 for changing a client phone number. In local development the OTP is static: 123456 and is returned in the response."
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/PhoneOtpRequest'
+ *     responses:
+ *       200:
+ *         description: OTP sent.
  *         content:
  *           application/json:
  *             example:
- *               success: false
- *               message: Invalid phone verification OTP
+ *               success: true
+ *               message: Phone verification OTP sent successfully
+ *               data:
+ *                 country_code: "+20"
+ *                 phone_number: "1000000000"
+ *                 otp: "123456"
+ *       400:
+ *         description: Validation error.
+ */
+
+/**
+ * @swagger
+ * /client/profile/phone/verify:
+ *   put:
+ *     tags: [Clients]
+ *     summary: Verify and update client phone number
+ *     description: "Step 2 for changing a client phone number. Send the phone number and OTP, then the API updates the account phone fields."
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/PhoneVerificationRequest'
+ *     responses:
+ *       200:
+ *         description: Phone verified and updated.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Phone number verified and updated successfully
+ *               data:
+ *                 id: 1
+ *                 country_code: "+20"
+ *                 phone_number: "1000000000"
+ *                 phone_verified_at: 2026-04-20T10:00:00.000Z
+ *                 type: client
+ *       400:
+ *         description: Validation error or invalid OTP.
  */
 
 /**
@@ -490,7 +586,7 @@
  *   put:
  *     tags: [Users]
  *     summary: Update my user profile
- *     description: "Use this when a student saves profile details. This is a partial update, so send only the fields that changed. Phone fields are not accepted here; use POST /auth/phone/verify after OTP verification."
+ *     description: "Use this when a student saves profile details. This is a partial update, so send only the fields that changed. Phone fields are not accepted here; use POST /user/profile/phone/send-otp then PUT /user/profile/phone/verify."
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -778,7 +874,7 @@
  *   put:
  *     tags: [Clients]
  *     summary: Update client profile
- *     description: "Use this when a client updates their company profile. This is a partial update. Phone fields are not accepted here; use POST /auth/phone/verify after OTP verification."
+ *     description: "Use this when a client updates their company profile. This is a partial update. Phone fields are not accepted here; use POST /client/profile/phone/send-otp then PUT /client/profile/phone/verify."
  *     security:
  *       - bearerAuth: []
  *     requestBody:

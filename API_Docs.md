@@ -12,11 +12,12 @@ Authorization: Bearer <jwt-token>
 - [GET / Root](#root)
 - [POST /auth/login Login](#login)
 - [POST /auth/register Register](#register)
-- [POST /auth/phone/verify Verify Phone Number](#verify-phone-number)
 - [POST /auth/forget-password Forget Password](#forget-password)
 - [POST /auth/reset-password Reset Password](#reset-password)
 - [GET /user/profile Get My User Profile](#get-my-user-profile)
 - [PUT /user/profile Update My User Profile](#update-my-user-profile)
+- [POST /user/profile/phone/send-otp Send User Phone OTP](#send-user-phone-otp)
+- [PUT /user/profile/phone/verify Verify User Phone Number](#verify-user-phone-number)
 - [PUT /user/profile-picture Update Profile Picture](#update-profile-picture)
 - [GET /user/profiles/:user_id Get Public User Profile](#get-public-user-profile)
 - [GET /user/jobs Get Matching Jobs](#get-matching-jobs)
@@ -27,6 +28,8 @@ Authorization: Bearer <jwt-token>
 - [GET /client/ Client Index](#client-index)
 - [GET /client/profile Get Client Profile](#get-client-profile)
 - [PUT /client/profile Update Client Profile](#update-client-profile)
+- [POST /client/profile/phone/send-otp Send Client Phone OTP](#send-client-phone-otp)
+- [PUT /client/profile/phone/verify Verify Client Phone Number](#verify-client-phone-number)
 - [POST /client/jobs Create Job](#create-job)
 - [GET /client/jobs Get Client Jobs](#get-client-jobs)
 - [GET /client/jobs/:job_id/offers Get Job Offers](#get-job-offers)
@@ -122,40 +125,6 @@ Register
     "username": "ahmed123",
     "email": "ahmed@example.com",
     "type": "client"
-  }
-}
-```
-
-## Verify Phone Number
-
-### Name
-Verify Phone Number
-
-### Verb Path
-`POST /auth/phone/verify`
-
-### Request Body
-Use this endpoint when an authenticated user or client changes their phone number. For local development, send the static OTP `123456`.
-
-```json
-{
-  "country_code": "+20",
-  "phone_number": "1000000000",
-  "otp": "123456"
-}
-```
-
-### Response Body
-```json
-{
-  "success": true,
-  "message": "Phone number verified and updated successfully",
-  "data": {
-    "id": 1,
-    "country_code": "+20",
-    "phone_number": "1000000000",
-    "phone_verified_at": "2026-04-20T10:00:00.000Z",
-    "type": "user"
   }
 }
 ```
@@ -256,7 +225,7 @@ Update My User Profile
 `PUT /user/profile`
 
 ### Request Body
-This is a partial update. Send only the fields that changed. Phone fields are not accepted here; use `POST /auth/phone/verify`.
+This is a partial update. Send only the fields that changed. Phone fields are not accepted here; use `POST /user/profile/phone/send-otp`, then `PUT /user/profile/phone/verify`.
 
 ```json
 {
@@ -299,6 +268,71 @@ This is a partial update. Send only the fields that changed. Phone fields are no
       "college": "Faculty of Computers and Artificial Intelligence",
       "study_years": "2019-2023"
     }
+  }
+}
+```
+
+## Send User Phone OTP
+
+### Name
+Send User Phone OTP
+
+### Verb Path
+`POST /user/profile/phone/send-otp`
+
+### Request Body
+Step 1 for changing a student phone number. For local development, the static OTP is `123456` and is returned in the response.
+
+```json
+{
+  "country_code": "+20",
+  "phone_number": "1000000000"
+}
+```
+
+### Response Body
+```json
+{
+  "success": true,
+  "message": "Phone verification OTP sent successfully",
+  "data": {
+    "country_code": "+20",
+    "phone_number": "1000000000",
+    "otp": "123456"
+  }
+}
+```
+
+## Verify User Phone Number
+
+### Name
+Verify User Phone Number
+
+### Verb Path
+`PUT /user/profile/phone/verify`
+
+### Request Body
+Step 2 for changing a student phone number. Send the same phone number with the OTP, then the API verifies and updates the account.
+
+```json
+{
+  "country_code": "+20",
+  "phone_number": "1000000000",
+  "otp": "123456"
+}
+```
+
+### Response Body
+```json
+{
+  "success": true,
+  "message": "Phone number verified and updated successfully",
+  "data": {
+    "id": 1,
+    "country_code": "+20",
+    "phone_number": "1000000000",
+    "phone_verified_at": "2026-04-20T10:00:00.000Z",
+    "type": "user"
   }
 }
 ```
@@ -541,7 +575,7 @@ Update Client Profile
 `PUT /client/profile`
 
 ### Request Body
-This is a partial update. Send only the fields that changed. Phone fields are not accepted here; use `POST /auth/phone/verify`.
+This is a partial update. Send only the fields that changed. Phone fields are not accepted here; use `POST /client/profile/phone/send-otp`, then `PUT /client/profile/phone/verify`.
 
 ```json
 {
@@ -558,6 +592,71 @@ This is a partial update. Send only the fields that changed. Phone fields are no
   "success": true,
   "message": "Client profile updated successfully",
   "data": {"id": 1, "company_name": "Skill Link"}
+}
+```
+
+## Send Client Phone OTP
+
+### Name
+Send Client Phone OTP
+
+### Verb Path
+`POST /client/profile/phone/send-otp`
+
+### Request Body
+Step 1 for changing a client phone number. For local development, the static OTP is `123456` and is returned in the response.
+
+```json
+{
+  "country_code": "+20",
+  "phone_number": "1000000000"
+}
+```
+
+### Response Body
+```json
+{
+  "success": true,
+  "message": "Phone verification OTP sent successfully",
+  "data": {
+    "country_code": "+20",
+    "phone_number": "1000000000",
+    "otp": "123456"
+  }
+}
+```
+
+## Verify Client Phone Number
+
+### Name
+Verify Client Phone Number
+
+### Verb Path
+`PUT /client/profile/phone/verify`
+
+### Request Body
+Step 2 for changing a client phone number. Send the same phone number with the OTP, then the API verifies and updates the account.
+
+```json
+{
+  "country_code": "+20",
+  "phone_number": "1000000000",
+  "otp": "123456"
+}
+```
+
+### Response Body
+```json
+{
+  "success": true,
+  "message": "Phone number verified and updated successfully",
+  "data": {
+    "id": 1,
+    "country_code": "+20",
+    "phone_number": "1000000000",
+    "phone_verified_at": "2026-04-20T10:00:00.000Z",
+    "type": "client"
+  }
 }
 ```
 

@@ -8,6 +8,31 @@ function getAccountModel(type) {
   return type === "client" ? Client : User;
 }
 
+async function sendPhoneOtp(req, res) {
+  const schema = joi.object({
+    country_code: joi.string().required(),
+    phone_number: joi.string().required()
+  });
+
+  const validation = schema.validate(req.body);
+  if (validation.error) {
+    return res.status(400).send({
+      success: false,
+      message: validation.error.message
+    });
+  }
+
+  return res.send({
+    success: true,
+    message: "Phone verification OTP sent successfully",
+    data: {
+      country_code: validation.value.country_code,
+      phone_number: validation.value.phone_number,
+      otp: LOCAL_PHONE_OTP
+    }
+  });
+}
+
 async function verifyPhone(req, res) {
   const schema = joi.object({
     country_code: joi.string().required(),
@@ -44,5 +69,6 @@ async function verifyPhone(req, res) {
 }
 
 module.exports = {
+  sendPhoneOtp,
   verifyPhone
 };
