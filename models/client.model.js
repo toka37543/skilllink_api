@@ -1,4 +1,7 @@
 const db = require("../lib/db");
+const { serializeJsonFields, stringifyJson } = require("../lib/helpers");
+
+const jsonFields = ["languages"];
 
 class Client {
   static async create(data, connection = db) {
@@ -16,20 +19,59 @@ class Client {
 
   static async findById(id, connection = db) {
     const [rows] = await connection.execute(
-      "SELECT id, username, first_name, last_name, email, country_code, phone_number, phone_verified_at, company_name, company_details, created_at, updated_at FROM clients WHERE id = ? LIMIT 1",
+      `SELECT
+        id,
+        username,
+        first_name,
+        last_name,
+        email,
+        country_code,
+        phone_number,
+        phone_verified_at,
+        location,
+        languages,
+        about,
+        company_name,
+        industry,
+        website,
+        company_details AS company_description,
+        created_at,
+        updated_at
+      FROM clients
+      WHERE id = ? LIMIT 1`,
       [id]
     );
 
-    return rows[0] ?? null;
+    return serializeJsonFields(rows[0], jsonFields);
   }
 
   static async findByEmail(email, connection = db) {
     const [rows] = await connection.execute(
-      "SELECT id, username, first_name, last_name, email, country_code, phone_number, phone_verified_at, company_name, company_details, password, created_at, updated_at FROM clients WHERE email = ? LIMIT 1",
+      `SELECT
+        id,
+        username,
+        first_name,
+        last_name,
+        email,
+        country_code,
+        phone_number,
+        phone_verified_at,
+        location,
+        languages,
+        about,
+        company_name,
+        industry,
+        website,
+        company_details AS company_description,
+        password,
+        created_at,
+        updated_at
+      FROM clients
+      WHERE email = ? LIMIT 1`,
       [email]
     );
 
-    return rows[0] ?? null;
+    return serializeJsonFields(rows[0], jsonFields);
   }
 
   static async updatePassword(email, password, connection = db) {
@@ -40,13 +82,20 @@ class Client {
     const current = await this.findById(id, connection);
 
     await connection.execute(
-      "UPDATE clients SET username = ?, first_name = ?, last_name = ?, company_name = ?, company_details = ? WHERE id = ?",
+      `UPDATE clients
+       SET username = ?, first_name = ?, last_name = ?, location = ?, languages = ?, about = ?, company_name = ?, industry = ?, website = ?, company_details = ?
+       WHERE id = ?`,
       [
         data.username ?? current?.username,
         data.first_name ?? current?.first_name ?? null,
         data.last_name ?? current?.last_name ?? null,
+        data.location ?? current?.location ?? null,
+        stringifyJson(data.languages ?? current?.languages ?? null),
+        data.about ?? current?.about ?? null,
         data.company_name ?? current?.company_name ?? null,
-        data.company_details ?? current?.company_details ?? null,
+        data.industry ?? current?.industry ?? null,
+        data.website ?? current?.website ?? null,
+        data.company_description ?? current?.company_description ?? null,
         id
       ]
     );

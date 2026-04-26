@@ -29,7 +29,12 @@ CREATE TABLE IF NOT EXISTS clients (
     phone_number VARCHAR(50) NULL,
     phone_verified_at TIMESTAMP NULL,
     password VARCHAR(255) NOT NULL,
+    location VARCHAR(255) NULL,
+    languages JSON NULL,
+    about TEXT NULL,
     company_name VARCHAR(255) NULL,
+    industry VARCHAR(255) NULL,
+    website VARCHAR(255) NULL,
     company_details TEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

@@ -138,10 +138,27 @@
  *         last_name:
  *           type: string
  *           example: Hassan
+ *         location:
+ *           type: string
+ *           example: Dubai, UAE
+ *         languages:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: [Arabic, English]
+ *         about:
+ *           type: string
+ *           example: Operations lead managing hiring partnerships and delivery.
  *         company_name:
  *           type: string
  *           example: Skill Link
- *         company_details:
+ *         industry:
+ *           type: string
+ *           example: Recruitment Technology
+ *         website:
+ *           type: string
+ *           example: https://skilllink.example.com
+ *         company_description:
  *           type: string
  *           example: Hiring company profile
  *     JobRequest:
@@ -870,7 +887,15 @@
  *               success: true
  *               data:
  *                 id: 1
+ *                 first_name: Sara
+ *                 last_name: Hassan
+ *                 location: Dubai, UAE
+ *                 languages: [Arabic, English]
+ *                 about: Operations lead managing hiring partnerships and delivery.
  *                 company_name: Skill Link
+ *                 industry: Recruitment Technology
+ *                 website: https://skilllink.example.com
+ *                 company_description: Hiring company profile
  *   put:
  *     tags: [Clients]
  *     summary: Update client profile
@@ -893,7 +918,14 @@
  *               message: Client profile updated successfully
  *               data:
  *                 id: 1
+ *                 first_name: Sara
+ *                 last_name: Hassan
+ *                 location: Dubai, UAE
+ *                 languages: [Arabic, English]
  *                 company_name: Skill Link
+ *                 industry: Recruitment Technology
+ *                 website: https://skilllink.example.com
+ *                 company_description: Hiring company profile
  */
 
 /**

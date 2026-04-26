@@ -93,6 +93,31 @@ const accountColumns = [
   },
   {
     table: "clients",
+    column: "location",
+    ddl: "ALTER TABLE clients ADD COLUMN location VARCHAR(255) NULL AFTER password"
+  },
+  {
+    table: "clients",
+    column: "languages",
+    ddl: "ALTER TABLE clients ADD COLUMN languages JSON NULL AFTER location"
+  },
+  {
+    table: "clients",
+    column: "about",
+    ddl: "ALTER TABLE clients ADD COLUMN about TEXT NULL AFTER languages"
+  },
+  {
+    table: "clients",
+    column: "industry",
+    ddl: "ALTER TABLE clients ADD COLUMN industry VARCHAR(255) NULL AFTER company_name"
+  },
+  {
+    table: "clients",
+    column: "website",
+    ddl: "ALTER TABLE clients ADD COLUMN website VARCHAR(255) NULL AFTER industry"
+  },
+  {
+    table: "clients",
     column: "company_details",
     ddl: "ALTER TABLE clients ADD COLUMN company_details TEXT NULL AFTER company_name"
   },

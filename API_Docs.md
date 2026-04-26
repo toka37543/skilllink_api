@@ -561,7 +561,15 @@ No request body.
   "success": true,
   "data": {
     "id": 1,
-    "company_name": "Skill Link"
+    "first_name": "Sara",
+    "last_name": "Hassan",
+    "location": "Dubai, UAE",
+    "languages": ["Arabic", "English"],
+    "about": "Operations lead managing hiring partnerships and delivery.",
+    "company_name": "Skill Link",
+    "industry": "Recruitment Technology",
+    "website": "https://skilllink.example.com",
+    "company_description": "Hiring company profile"
   }
 }
 ```
@@ -581,8 +589,13 @@ This is a partial update. Send only the fields that changed. Phone fields are no
 {
   "first_name": "Sara",
   "last_name": "Hassan",
+  "location": "Dubai, UAE",
+  "languages": ["Arabic", "English"],
+  "about": "Operations lead managing hiring partnerships and delivery.",
   "company_name": "Skill Link",
-  "company_details": "Hiring company profile"
+  "industry": "Recruitment Technology",
+  "website": "https://skilllink.example.com",
+  "company_description": "Hiring company profile"
 }
 ```
 
@@ -591,7 +604,17 @@ This is a partial update. Send only the fields that changed. Phone fields are no
 {
   "success": true,
   "message": "Client profile updated successfully",
-  "data": {"id": 1, "company_name": "Skill Link"}
+  "data": {
+    "id": 1,
+    "first_name": "Sara",
+    "last_name": "Hassan",
+    "location": "Dubai, UAE",
+    "languages": ["Arabic", "English"],
+    "company_name": "Skill Link",
+    "industry": "Recruitment Technology",
+    "website": "https://skilllink.example.com",
+    "company_description": "Hiring company profile"
+  }
 }
 ```
 
