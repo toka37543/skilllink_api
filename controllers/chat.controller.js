@@ -2,6 +2,8 @@ const joi = require("joi");
 const ChatRoom = require("../models/chat-room.model");
 const ChatTask = require("../models/chat-task.model");
 const ChatAttachment = require("../models/chat-attachment.model");
+const ChatMessage = require("../models/chat-message.model");
+const Notification = require("../models/notification.model");
 
 async function ensureChatAccess(chatRoomId, account) {
   const chatRoom = await ChatRoom.findById(chatRoomId);
@@ -157,11 +159,76 @@ async function createAttachment(req, res) {
   });
 }
 
+async function listMessages(req, res) {
+  const chatRoom = await ensureChatAccess(req.params.chat_room_id, req.account);
+  if (!chatRoom) {
+    return res.status(404).send({
+      success: false,
+      message: "Chat room not found"
+    });
+  }
+
+  // Opening the thread marks the other party's messages as read.
+  await ChatMessage.markRoomReadFor(chatRoom.id, req.account);
+
+  return res.send({
+    success: true,
+    data: await ChatMessage.listByRoom(chatRoom.id)
+  });
+}
+
+async function createMessage(req, res) {
+  const schema = joi.object({
+    // Accept either `body` or `text` so the frontend can use either name.
+    body: joi.string().min(1),
+    text: joi.string().min(1)
+  }).or("body", "text");
+
+  const validation = schema.validate(req.body);
+  if (validation.error) {
+    return res.status(400).send({
+      success: false,
+      message: validation.error.message
+    });
+  }
+
+  const chatRoom = await ensureChatAccess(req.params.chat_room_id, req.account);
+  if (!chatRoom) {
+    return res.status(404).send({
+      success: false,
+      message: "Chat room not found"
+    });
+  }
+
+  const body = validation.value.body ?? validation.value.text;
+  const message = await ChatMessage.create(chatRoom.id, req.account, body);
+
+  // Notify the other participant so their bell badge updates.
+  const recipient = req.account.type === "client"
+    ? { type: "user", id: chatRoom.user_id }
+    : { type: "client", id: chatRoom.client_id };
+
+  await Notification.create(recipient, {
+    type: "chat_message",
+    title: "New message",
+    body: body.slice(0, 120),
+    link: "/messages"
+  });
+
+  return res.status(201).send({
+    success: true,
+    message: "Message sent successfully",
+    data: message
+  });
+}
+
 module.exports = {
   listRooms,
   listTasks,
   createTask,
   updateTask,
   listAttachments,
-  createAttachment
+  createAttachment,
+  listMessages,
+  createMessage
 };

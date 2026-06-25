@@ -1,5 +1,7 @@
 require("dotenv").config();
 
+const fs = require("fs");
+const path = require("path");
 const mysql = require("mysql2/promise");
 
 const database = process.env.DB_NAME || "skill_link_db";
@@ -10,7 +12,8 @@ const config = {
   port: Number(process.env.DB_PORT || 3306),
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "",
-  multipleStatements: false
+  // Needed to run the whole init.sql (many statements) in one query.
+  multipleStatements: true
 };
 
 const accountColumns = [
@@ -158,6 +161,82 @@ const accountColumns = [
   }
 ];
 
+// New feature tables added after the original init.sql. Each statement is
+// idempotent (CREATE TABLE IF NOT EXISTS) so running migrate repeatedly is safe.
+const newTables = [
+  `CREATE TABLE IF NOT EXISTS chat_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    chat_room_id INT NOT NULL,
+    sender_type ENUM('user', 'client') NOT NULL,
+    sender_id INT NOT NULL,
+    body TEXT NOT NULL,
+    read_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_chat_messages_room (chat_room_id),
+    FOREIGN KEY (chat_room_id) REFERENCES chat_rooms(id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS saved_jobs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    owner_type ENUM('user', 'client') NOT NULL,
+    owner_id INT NOT NULL,
+    job_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_saved_job (owner_type, owner_id, job_id),
+    INDEX idx_saved_jobs_owner (owner_type, owner_id),
+    FOREIGN KEY (job_id) REFERENCES jobs(id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS reports (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    reporter_type ENUM('user', 'client') NOT NULL,
+    reporter_id INT NOT NULL,
+    name VARCHAR(190) NULL,
+    email VARCHAR(190) NULL,
+    issue_type VARCHAR(100) NULL,
+    description TEXT NOT NULL,
+    attachment_url VARCHAR(500) NULL,
+    status ENUM('open', 'in_review', 'resolved') NOT NULL DEFAULT 'open',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_reports_reporter (reporter_type, reporter_id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    recipient_type ENUM('user', 'client') NOT NULL,
+    recipient_id INT NOT NULL,
+    type VARCHAR(100) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    body TEXT NULL,
+    link VARCHAR(255) NULL,
+    read_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_notifications_recipient (recipient_type, recipient_id, read_at)
+  )`
+];
+
+async function createNewTables(connection) {
+  for (const ddl of newTables) {
+    await connection.query(ddl);
+  }
+  console.log("Ensured feature tables (chat_messages, saved_jobs, reports, notifications)");
+}
+
+// Older databases created users/clients with first_name/last_name NOT NULL.
+// Registration only collects username/email/password (names are filled in later
+// via the profile), so make these columns nullable. Idempotent.
+async function ensureNullableNameColumns(connection) {
+  for (const table of ["users", "clients"]) {
+    for (const column of ["first_name", "last_name"]) {
+      try {
+        await connection.query(`ALTER TABLE ${table} MODIFY ${column} VARCHAR(190) NULL`);
+      } catch (err) {
+        // Table/column may not exist yet on a brand-new DB; createNewTables/base
+        // schema handle that. Safe to ignore.
+      }
+    }
+  }
+  console.log("Ensured users/clients name columns are nullable");
+}
+
 async function tableExists(connection, table) {
   const [rows] = await connection.execute(
     `SELECT COUNT(*) AS count
@@ -223,13 +302,37 @@ async function migrateAccountColumns(connection) {
   }
 }
 
+// Run the full base schema from init.sql (CREATE TABLE IF NOT EXISTS ...). This
+// makes `npm run migrate` self-sufficient on a fresh database: it creates every
+// base table (clients, jobs, chat_rooms, wallets, ...) before the column patches
+// and feature tables below — otherwise foreign keys to those tables fail.
+// The `CREATE DATABASE` / `USE` lines are stripped because main() already
+// created and selected the configured database (which may differ from init.sql).
+async function applyBaseSchema(connection) {
+  const initSqlPath = path.join(__dirname, "../init.sql");
+  if (!fs.existsSync(initSqlPath)) {
+    console.log("Skipped base schema; init.sql not found");
+    return;
+  }
+
+  const sql = fs.readFileSync(initSqlPath, "utf8")
+    .replace(/CREATE\s+DATABASE[^;]*;/gi, "")
+    .replace(/USE\s+[^;]*;/gi, "");
+
+  await connection.query(sql);
+  console.log("Applied base schema from init.sql");
+}
+
 async function main() {
   const connection = await mysql.createConnection(config);
 
   try {
     await connection.query(`CREATE DATABASE IF NOT EXISTS ${databaseIdentifier}`);
     await connection.query(`USE ${databaseIdentifier}`);
+    await applyBaseSchema(connection);
     await migrateAccountColumns(connection);
+    await createNewTables(connection);
+    await ensureNullableNameColumns(connection);
     console.log("Migrations completed");
   } finally {
     await connection.end();

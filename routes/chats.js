@@ -15,4 +15,8 @@ app.get("/chats/:chat_room_id/attachments", requireAuth, chatController.listAtta
 
 app.post("/chats/:chat_room_id/attachments", requireAuth, chatController.createAttachment);
 
+app.get("/chats/:chat_room_id/messages", requireAuth, chatController.listMessages);
+
+app.post("/chats/:chat_room_id/messages", requireAuth, chatController.createMessage);
+
 module.exports = app;

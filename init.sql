@@ -196,6 +196,61 @@ CREATE TABLE IF NOT EXISTS chat_attachments (
     FOREIGN KEY (chat_room_id) REFERENCES chat_rooms(id)
 );
 
--- COLUMN_NAME DATA_TYPE (FLAGS) 
+-- Chat messages exchanged inside a chat room (text chat between client and user)
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    chat_room_id INT NOT NULL,
+    sender_type ENUM('user', 'client') NOT NULL,
+    sender_id INT NOT NULL,
+    body TEXT NOT NULL,
+    read_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_chat_messages_room (chat_room_id),
+    FOREIGN KEY (chat_room_id) REFERENCES chat_rooms(id)
+);
+
+-- Jobs a user/client has bookmarked ("saved"). owner_type tells the two apart.
+CREATE TABLE IF NOT EXISTS saved_jobs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    owner_type ENUM('user', 'client') NOT NULL,
+    owner_id INT NOT NULL,
+    job_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_saved_job (owner_type, owner_id, job_id),
+    INDEX idx_saved_jobs_owner (owner_type, owner_id),
+    FOREIGN KEY (job_id) REFERENCES jobs(id)
+);
+
+-- Support / issue reports submitted from the "Report an issue" screens
+CREATE TABLE IF NOT EXISTS reports (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    reporter_type ENUM('user', 'client') NOT NULL,
+    reporter_id INT NOT NULL,
+    name VARCHAR(190) NULL,
+    email VARCHAR(190) NULL,
+    issue_type VARCHAR(100) NULL,
+    description TEXT NOT NULL,
+    attachment_url VARCHAR(500) NULL,
+    status ENUM('open', 'in_review', 'resolved') NOT NULL DEFAULT 'open',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_reports_reporter (reporter_type, reporter_id)
+);
+
+-- In-app notifications shown in the navbar bell dropdown
+CREATE TABLE IF NOT EXISTS notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    recipient_type ENUM('user', 'client') NOT NULL,
+    recipient_id INT NOT NULL,
+    type VARCHAR(100) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    body TEXT NULL,
+    link VARCHAR(255) NULL,
+    read_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_notifications_recipient (recipient_type, recipient_id, read_at)
+);
+
+-- COLUMN_NAME DATA_TYPE (FLAGS)
 -- FLAGS: PRIMARY, UNIQUE, NOT_NULL, AUTO_INCREMENT, DEFAULT 'default_value'
 -- CURRENT_TIMESTAMP the default value is the current timestamp

@@ -6,6 +6,30 @@ const Wallet = require("../models/wallet.model");
 const JobFund = require("../models/job-fund.model");
 const ChatRoom = require("../models/chat-room.model");
 const ChatAttachment = require("../models/chat-attachment.model");
+const SavedJob = require("../models/saved-job.model");
+const Notification = require("../models/notification.model");
+
+// Single job details. Used by the freelancer job/apply pages. When a user is
+// logged in we also tell them whether they have already saved this job.
+async function getJobDetails(req, res) {
+  const job = await Job.findById(req.params.job_id);
+  if (!job) {
+    return res.status(404).send({
+      success: false,
+      message: "Job not found"
+    });
+  }
+
+  let saved = false;
+  if (req.account) {
+    saved = await SavedJob.isSaved(req.account.type, req.account.id, job.id);
+  }
+
+  return res.send({
+    success: true,
+    data: { ...job, saved }
+  });
+}
 
 async function createJob(req, res) {
   const schema = joi.object({
@@ -72,6 +96,14 @@ async function applyToJob(req, res) {
 
   const offer = await Offer.create(req.account.id, req.params.job_id, validation.value);
 
+  // Let the client know a new offer landed on their job.
+  await Notification.create({ type: "client", id: job.client_id }, {
+    type: "offer_received",
+    title: "New offer received",
+    body: `You received a new offer on "${job.title}".`,
+    link: "/client-home"
+  });
+
   return res.status(201).send({
     success: true,
     message: "Offer sent successfully",
@@ -123,6 +155,14 @@ async function acceptOffer(req, res) {
     }, connection);
 
     await connection.commit();
+
+    // Tell the freelancer their offer was accepted (best-effort, after commit).
+    await Notification.create({ type: "user", id: offer.user_id }, {
+      type: "offer_accepted",
+      title: "Your offer was accepted",
+      body: "A client accepted your offer. A chat room is now open to start the work.",
+      link: "/"
+    });
 
     return res.send({
       success: true,
@@ -274,6 +314,7 @@ async function approveCompletion(req, res) {
 }
 
 module.exports = {
+  getJobDetails,
   createJob,
   listClientJobs,
   applyToJob,

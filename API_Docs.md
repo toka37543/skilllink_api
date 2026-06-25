@@ -1011,3 +1011,151 @@ No request body.
   "data": {"id": 1, "email": "ahmed@example.com"}
 }
 ```
+
+---
+
+# Newly added endpoints
+
+These endpoints were added to support frontend screens that previously fell back
+to mock data (saved jobs, reports, notifications, chat messages) plus single job
+details. All require `Authorization: Bearer <jwt-token>`.
+
+## Get Job Details
+
+### Verb Path
+`GET /user/jobs/:job_id`
+
+### Response Body
+```json
+{
+  "success": true,
+  "data": { "id": 1, "title": "Landing page", "budget": 500, "speciality": "frontend", "needed_skills": ["vue"], "status": "open", "saved": false }
+}
+```
+Returns `404 { "success": false, "message": "Job not found" }` when the id is unknown.
+
+## Saved Jobs (bookmarks)
+
+Available for both account types. Use the `/user/...` paths when logged in as a
+freelancer and `/client/...` when logged in as a client.
+
+### Verb Paths
+- `GET /user/saved-jobs` — list saved jobs
+- `POST /user/jobs/:job_id/save` — save a job
+- `DELETE /user/jobs/:job_id/save` — remove a saved job
+- `GET /client/saved-jobs`, `POST /client/jobs/:job_id/save`, `DELETE /client/jobs/:job_id/save` — client equivalents
+
+### Response Body (list)
+```json
+{
+  "success": true,
+  "data": [ { "id": 1, "title": "Landing page", "saved": true, "saved_at": "2026-06-25T10:00:00.000Z" } ]
+}
+```
+
+### Response Body (save / unsave)
+```json
+{ "success": true, "message": "Job saved successfully", "data": { "job_id": 1, "saved": true } }
+```
+
+## Reports
+
+Available for both account types (`/user/reports` and `/client/reports`).
+
+### Verb Paths
+- `GET /user/reports` — list my reports
+- `POST /user/reports` — submit a report
+
+### Request Body (POST)
+```json
+{
+  "name": "Ahmed Ali",
+  "email": "ahmed@example.com",
+  "issue_type": "technical",
+  "description": "The apply button does nothing.",
+  "attachment_url": "https://example.com/screenshot.png"
+}
+```
+Only `description` is required.
+
+### Response Body
+```json
+{ "success": true, "message": "Report submitted successfully", "data": { "id": 1, "status": "open" } }
+```
+
+## Notifications
+
+### Verb Paths
+- `GET /notifications` — list notifications + unread count
+- `PUT /notifications/:id/read` — mark one as read
+
+Notifications are created automatically when a freelancer applies to a job, when a
+client accepts an offer, and when a chat message is sent.
+
+### Response Body (list)
+```json
+{
+  "success": true,
+  "data": {
+    "items": [ { "id": 1, "type": "offer_accepted", "title": "Your offer was accepted", "body": "...", "link": "/", "read_at": null } ],
+    "unread_count": 1
+  }
+}
+```
+
+## Chat Messages
+
+### Verb Paths
+- `GET /chats/:chat_room_id/messages` — list messages (also marks the other party's messages read)
+- `POST /chats/:chat_room_id/messages` — send a message
+
+### Request Body (POST)
+```json
+{ "body": "Hi, when can you start?" }
+```
+`text` is accepted as an alias for `body`. Only participants of the chat room may
+read or post; others get `404 Chat room not found`.
+
+### Response Body
+```json
+{ "success": true, "message": "Message sent successfully", "data": { "id": 1, "chat_room_id": 1, "sender_type": "client", "body": "Hi, when can you start?" } }
+```
+
+## Payments — mock gateway
+
+`POST /payments/top-up` runs the charge through a **mock gateway** (no real money).
+Use these test credit-card numbers to demo each outcome:
+
+| Card number          | Result                          |
+| -------------------- | ------------------------------- |
+| 4242 4242 4242 4242  | approved                        |
+| 4000 0000 0000 0002  | declined (`card_declined`)      |
+| 4000 0000 0000 9995  | declined (`insufficient_funds`) |
+| 4000 0000 0000 0069  | declined (`expired_card`)       |
+| (fails Luhn check)   | declined (`invalid_card`)       |
+
+Non-card methods (`vodafone`, `fawry`, `instapay`) are always approved.
+
+### Request Body
+```json
+{
+  "amount": 500,
+  "currency": "USD",
+  "payment_method": "creditCard",
+  "payment_details": { "card_number": "4242424242424242", "expiry": "12/29", "cvv": "123", "cardholder_name": "Ahmed Ali" }
+}
+```
+
+### Response Body (approved)
+```json
+{
+  "success": true,
+  "message": "Wallet topped up successfully",
+  "data": { "payment": { "success": true, "status": "paid", "transaction_id": "mock_creditCard_123" }, "wallet": { "balance": "500.00" } }
+}
+```
+
+### Response Body (declined)
+```json
+{ "success": false, "message": "Card was declined (card_declined)", "data": { "success": false, "status": "declined", "decline_code": "card_declined" } }
+```
