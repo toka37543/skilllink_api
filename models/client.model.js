@@ -35,6 +35,7 @@ class Client {
         industry,
         website,
         company_details AS company_description,
+        profile_picture_url,
         created_at,
         updated_at
       FROM clients
@@ -63,6 +64,7 @@ class Client {
         industry,
         website,
         company_details AS company_description,
+        profile_picture_url,
         password,
         created_at,
         updated_at
@@ -107,6 +109,15 @@ class Client {
     await connection.execute(
       "UPDATE clients SET country_code = ?, phone_number = ?, phone_verified_at = CURRENT_TIMESTAMP WHERE id = ?",
       [data.country_code, data.phone_number, id]
+    );
+
+    return this.findById(id, connection);
+  }
+
+  static async updateProfilePicture(id, profilePictureUrl, connection = db) {
+    await connection.execute(
+      "UPDATE clients SET profile_picture_url = ? WHERE id = ?",
+      [profilePictureUrl, id]
     );
 
     return this.findById(id, connection);

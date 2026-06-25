@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS clients (
     industry VARCHAR(255) NULL,
     website VARCHAR(255) NULL,
     company_details TEXT NULL,
+    profile_picture_url VARCHAR(500) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

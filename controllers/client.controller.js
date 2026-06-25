@@ -44,8 +44,36 @@ async function updateProfile(req, res) {
   });
 }
 
+async function updateProfilePicture(req, res) {
+  if (!req.uploadedFile) {
+    return res.status(400).send({
+      success: false,
+      message: "Missing profile picture upload"
+    });
+  }
+
+  const baseUrl = (process.env.API_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
+  const profilePictureUrl = `${baseUrl}${req.uploadedFile.publicPath}`;
+  const client = await Client.updateProfilePicture(req.account.id, profilePictureUrl);
+
+  return res.send({
+    success: true,
+    message: "Profile picture updated successfully",
+    data: {
+      client,
+      file: {
+        url: profilePictureUrl,
+        path: req.uploadedFile.publicPath,
+        mime_type: req.uploadedFile.mimeType,
+        size: req.uploadedFile.size
+      }
+    }
+  });
+}
+
 module.exports = {
   index,
   getProfile,
-  updateProfile
+  updateProfile,
+  updateProfilePicture
 };

@@ -111,6 +111,11 @@ const accountColumns = [
   },
   {
     table: "clients",
+    column: "profile_picture_url",
+    ddl: "ALTER TABLE clients ADD COLUMN profile_picture_url VARCHAR(500) NULL AFTER company_details"
+  },
+  {
+    table: "clients",
     column: "industry",
     ddl: "ALTER TABLE clients ADD COLUMN industry VARCHAR(255) NULL AFTER company_name"
   },
